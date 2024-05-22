@@ -1,0 +1,182 @@
+import os
+import datetime
+
+class ADRSystem:
+    def _init_(self):
+        pass
+
+    def create_adr(self):
+        title = input("Enter the title of the ADR: ")
+        context = input("Provide a brief description of the context: ")
+        decision = input("Document the decision made: ")
+        rationale = input("Explain the reasoning behind the decision: ")
+        consequences = input("Discuss the potential positive and negative consequences: ")
+
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        adr_template = f"""
+# ADR: {title}
+
+## Date: {timestamp}
+
+### Context:
+{context}
+
+### Decision:
+{decision}
+
+### Rationale:
+{rationale}
+
+### Consequences:
+{consequences}
+"""
+
+        adr_filename = f"{title.lower().replace(' ', '_')}_adr.md"
+        with open(adr_filename, "w") as adr_file:
+            adr_file.write(adr_template)
+
+        print(f"ADR created and saved to '{adr_filename}'")
+
+    def read_adr(self, filename):
+        try:
+            with open(filename, "r") as adr_file:
+                content = adr_file.read()
+                return content
+        except FileNotFoundError:
+            print(f"Error: ADR file '{filename}' not found.")
+            return None
+        except Exception as e:
+            print(f"Error reading ADR file: {e}")
+            return None
+
+    def update_adr(self):
+        adr_files = [f for f in os.listdir() if f.endswith("_adr.md")]
+
+        if not adr_files:
+            print("No ADR files found.")
+            return
+
+        print("Existing ADR files:")
+        for idx, file in enumerate(adr_files, start=1):
+            print(f"{idx}. {file}")
+
+        try:
+            choice = int(input("Enter the number of the file you want to update: "))
+            selected_file = adr_files[choice - 1]
+            print(f"Selected file: {selected_file}")
+
+            adr_content = self.read_adr(selected_file)
+
+            if adr_content is not None:
+                print(f"\nCurrent content of ADR file '{selected_file}':\n")
+                print(adr_content)
+
+                update_choice = input("\nEnter the part of the content to update (title, context, decision, rationale, consequences): ").lower()
+
+                if update_choice in ["title", "context", "decision", "rationale", "consequences"]:
+                    # Find the position of the chosen section in the ADR content
+                    section_start = adr_content.find(f"### {update_choice.capitalize()}:") + len(f"### {update_choice.capitalize()}:")
+                    section_end = adr_content.find("###", section_start)
+
+                    # Replace the specific section in the ADR content
+                    updated_content = input(f"Enter the updated content for {update_choice}: ")
+                    updated_adr_content = (
+                        adr_content[:section_start] +
+                        f"\n{updated_content}\n" +
+                        adr_content[section_end:]
+                    )
+
+                    with open(selected_file, "w") as adr_file:
+                        adr_file.write(updated_adr_content)
+
+                    print(f"\nADR file '{selected_file}' updated successfully.")
+                else:
+                    print("Invalid update choice. Please enter a valid part of the content.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+        except IndexError:
+            print("Invalid selection. Please enter a valid number.")
+
+    def delete_adr(self):
+        adr_files = [f for f in os.listdir() if f.endswith("_adr.md")]
+
+        if not adr_files:
+            print("No ADR files found.")
+            return
+
+        print("Existing ADR files:")
+        for idx, file in enumerate(adr_files, start=1):
+            print(f"{idx}. {file}")
+
+        try:
+            choice = int(input("Enter the number of the file you want to delete: "))
+            selected_file = adr_files[choice - 1]
+            print(f"Selected file: {selected_file}")
+
+            confirm_delete = input(f"Are you sure you want to delete '{selected_file}'? (yes/no): ").lower()
+
+            if confirm_delete == "yes":
+                os.remove(selected_file)
+                print(f"\nADR file '{selected_file}' deleted successfully.")
+            else:
+                print(f"Deletion of '{selected_file}' cancelled.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+        except IndexError:
+            print("Invalid selection. Please enter a valid number.")
+
+    def view_adr(self):
+        adr_files = [f for f in os.listdir() if f.endswith("_adr.md")]
+
+        if not adr_files:
+            print("No ADR files found.")
+            return
+
+        print("Existing ADR files:")
+        for idx, file in enumerate(adr_files, start=1):
+            print(f"{idx}. {file}")
+
+        try:
+            choice = int(input("Enter the number of the file you want to view: "))
+            selected_file = adr_files[choice - 1]
+            print(f"Selected file: {selected_file}")
+
+            adr_content = self.read_adr(selected_file)
+
+            if adr_content is not None:
+                print(f"\nContent of ADR file '{selected_file}':\n")
+                print(adr_content)
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+        except IndexError:
+            print("Invalid selection. Please enter a valid number.")
+
+    def adr_menu(self):
+        while True:
+            print("\nADR System Menu:")
+            print("1. Create ADR")
+            print("2. Update ADR")
+            print("3. Delete ADR")
+            print("4. View ADR")
+            print("5. Exit")
+
+            choice = input("Enter your choice (1-5): ")
+
+            if choice == "1":
+                self.create_adr()
+            elif choice == "2":
+                self.update_adr()
+            elif choice == "3":
+                self.delete_adr()
+            elif choice == "4":
+                self.view_adr()
+            elif choice == "5":
+                print("Exiting ADR System. Goodbye!")
+                break
+            else:
+                print("Invalid choice. Please enter a number between 1 and 5.")
+
+if _name_ == "_main_":
+    adr_system = ADRSystem()
+    adr_system.adr_menu()
